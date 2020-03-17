@@ -18,6 +18,8 @@ export class LandroidDataset {
     batteryVoltage: number;
     batteryTemperature: number;
     batteryLevel: number;
+    gpsLongitude: number;
+    gpsLatitude: number;
     pitch: number;
     roll: number;
     yaw: number;
@@ -53,6 +55,8 @@ export class LandroidDataset {
             batteryVoltage: this.batteryVoltage,
             batteryTemperature: this.batteryTemperature,
             batteryLevel: this.batteryLevel,
+            gpsLatitude: this.gpsLatitude,
+            gpsLongitude: this.gpsLongitude,
             pitch: this.pitch,
             roll: this.roll,
             yaw: this.yaw,
@@ -132,6 +136,12 @@ export class LandroidDataset {
                 this.jsonData["roll"] = this.roll;
                 this.jsonData["yaw"] = this.yaw;
             }
+            if (readings["dat"]["modules"]) {
+                if (readings["dat"]["modules"]["4G"]) {
+		    this.gpsLatitude=Number(readings["dat"]["modules"]["4G"]["gps"]["coo"][0]).valueOf();
+		    this.gpsLongitude=Number(readings["dat"]["modules"]["4G"]["gps"]["coo"][1]).valueOf();
+		}
+	    }
         }
     }
 
