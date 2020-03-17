@@ -35,7 +35,7 @@ export class Scheduler {
                     let item = schedule[key];
                     let date = moment(key);
                     settings.push([date, item.durationMinutes]);
-                    if (i <= 7) {
+                    if (i < 7) {
                         LandroidS.getInstance().setSchedule(date.weekday(), item.serialize());
                     }
                 });
@@ -326,7 +326,7 @@ export class Scheduler {
                     let date = startDate.clone().subtract(i, "days");
                     dates.push(date.format("YYYY-MM-DD"));
                 }
-                db.all("SELECT * FROM schedule WHERE date IN (?)", dates, (e, rows) => {
+                db.all("SELECT * FROM schedule WHERE date IN (" + dates + ")", (e, rows) => {
                     if (e) {
                         reject(e);
                         return;

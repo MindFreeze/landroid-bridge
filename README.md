@@ -22,16 +22,16 @@ You can see the current readings and scheduler results on an integrated web inte
         --name landroid_bridge \
         --link mqtt:mqtt \
         -v /tmp/config.json:/usr/src/app/config.json \
-        weweave/landroid-bridge
+        virtualzone/landroid-bridge
     ```
 
-There is also a pre-built arm32v7 image for Raspberry Pi: ```weweave/landroid-bridge:arm32v7```
+There is also a pre-built arm32v7 image for Raspberry Pi: ```virtualzone/landroid-bridge:arm32v7```
 
 ### Building from source
-1. Make sure you have [Node.js](https://nodejs.org) installed (tested with Node.js v8).
+1. Make sure you have [Node.js](https://nodejs.org) installed (tested with Node.js v11).
 1. Check out the source code and build it:
     ```
-    git clone https://github.com/weweave/landroid-bridge.git
+    git clone https://github.com/virtualzone/landroid-bridge.git
     cd landroid-bridge
     npm install
     npm run grunt
@@ -52,6 +52,41 @@ Landroid Bridge does not feature any authentication or authorization right now. 
 You can access the web interface at:
 
 http://localhost:3000
+
+## Setting up MQTT
+To connect to an MQTT broker without any authentication, please modify your config.json like this:
+
+```
+"mqtt": {
+    "enable": true,
+    "url": "mqtt://localhost",
+    "topic": "landroid"
+}
+```
+
+If your MQTT broker requires username/password authentication:
+
+```
+"mqtt": {
+    "enable": true,
+    "url": "mqtt://username:password@localhost",
+    "topic": "landroid"
+}
+```
+
+To use SSL/TLS, specify the paths to the CA, Key and Cert files (paths relative to the bridge's working directory). You can optionally allow self-signed certificates:
+
+```
+"mqtt": {
+    "enable": true,
+    "url": "mqtts://localhost",
+    "topic": "landroid",
+    "caFile": "./optional_path_to_ca_file.crt",
+    "keyFile": "./optional_path_to_key_file.key",
+    "certFile": "./optional_path_to_cert_file.crt",
+    "allowSelfSigned": true
+}
+```
 
 ## Configuring the scheduler
 To enable and configure the scheduler modify your config.json:
@@ -134,10 +169,12 @@ To connect this Landroid Bridge to [OpenHAB](http://www.openhab.org/), add the f
 ## HTTP REST URLs
 * Get status as JSON: GET /landroid-s/status
 * Start mower: POST /landroid-s/start
-* Stop mower: POST /landroid-s/stop
+* Send mower home: POST /landroid-s/stop
+* Pause mower: POST /landroid-s/pause
 * Set rain delay: PUT /landroid-s/set/rainDelay/x (where 0 <= x <= 300)
 * Set time extension: PUT /landroid-s/set/timeExtension/x (where -100 <= x <= 100)
 * Set work time schedule: PUT /landroid-s/set/schedule/n (where 0 <= n <= 6, 0 is Sunday)
+* Poll landroid cloud: POST /landroid-s/poll
 
 ### Examples
 The following examples use the cURL command line util.
@@ -193,10 +230,12 @@ curl -X PUT -H "Content-Type: application/json" -d '{"startHour":10,"startMinute
 ### Published by your application (the bridge will perform updates)
 * landroid/set/start (starts the mower)
 * landroid/set/stop (stops the mower and sends it home)
-* landroid/set/mow (payload "start" starts the mower, "stop" stops the mower)
+* landroid/set/pause (stops the mower)
+* landroid/set/mow (payload "start" starts the mower, "stop" sends the mover home, "pause" stops the mower)
 * landroid/set/rainDelay (sets rain delay in minutes, supply delay value as payload)
 * landroid/set/timeExtension (sets time extension in percent, supply percentage value as payload)
 * landroid/set/schedule/n (sets work time for weekday n, where 0 is Sunday – see examples below)
+* landroid/set/poll (polls data from landroid cloud)
 
 ### Examples
 The following examples use the mosquitto_pub command line util of the Mosquitto MQTT broker.
